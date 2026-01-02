@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------- Global Reset -------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* -------------- Full Layout Control -------------- */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+/* Default Light Mode Background */
+body {
+  background-color: #F7F9FC;
+  transition: background-color .3s ease, color .3s ease;
+}
+
+/* Dark Mode Background (when .dark is added to root) */
+html.dark body {
+  background-color: #0B1221;
+  color: #ffffff;
+}
+
+/* -------------- Smooth UI Animations -------------- */
+button, a {
+  transition: all .25s ease;
+}
+
+/* -------------- Ripple Animation Holder -------------- */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+/* White wave effect */
+.white-wave {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: waveEffect .55s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes waveEffect {
+  0% { transform: scale(0.25); opacity: 0.8; }
+  70% { opacity: 0.4; }
+  100% { transform: scale(3.6); opacity: 0; }
+}
+
+/* -------------- Scrollbar Styling -------------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5cbd6;
+  border-radius: 20px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* -------------- Prevent Layout Shift When Sidebar Collapses -------------- */
+.page-container {
+  min-height: 100vh;
+  transition: padding-left .3s ease;
+}
