@@ -1,5 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+if (!API_BASE) {
+  throw new Error("❌ VITE_API_BASE_URL is not defined");
+}
+
 export const apiFetch = async (url, options = {}) => {
   const token = localStorage.getItem("adminToken");
 
@@ -12,13 +16,15 @@ export const apiFetch = async (url, options = {}) => {
     },
   });
 
-  let data;
+  let data = null;
   try {
     data = await res.json();
-  } catch {}
+  } catch {
+    data = null;
+  }
 
   if (!res.ok) {
-    throw new Error(data?.message || "API error");
+    throw new Error(data?.message || `Request failed (${res.status})`);
   }
 
   return data;
