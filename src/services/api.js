@@ -1,9 +1,13 @@
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://classroom-backend-s22x.onrender.com/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE) {
+  throw new Error("❌ VITE_API_BASE_URL is not defined");
+}
 
 export const apiFetch = async (url, options = {}) => {
-  const token = localStorage.getItem("adminToken");
+  const token =
+    localStorage.getItem("adminToken") ||
+    localStorage.getItem("studentToken");
 
   const res = await fetch(`${API_BASE}${url}`, {
     ...options,
@@ -14,9 +18,7 @@ export const apiFetch = async (url, options = {}) => {
     },
   });
 
-  if (res.status === 204) return null;
-
-  let data;
+  let data = null;
   try {
     data = await res.json();
   } catch {}
