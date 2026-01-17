@@ -49,7 +49,8 @@ export default function Signup() {
     }
 
     try {
-      const data = await apiFetch("/api/auth/register", {
+      // ✅ FIXED: NO /api HERE
+      const data = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: displayName,
@@ -67,7 +68,7 @@ export default function Signup() {
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("adminUser", JSON.stringify(data.user));
 
-      login(data.user); // sync AuthContext
+      login(data.user);
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
       setError(err.message || "Signup failed");
