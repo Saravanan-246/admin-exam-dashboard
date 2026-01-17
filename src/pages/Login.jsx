@@ -42,7 +42,8 @@ export default function Login() {
     }
 
     try {
-      const data = await apiFetch("/api/auth/login", {
+      // ✅ FIXED: NO /api HERE
+      const data = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
