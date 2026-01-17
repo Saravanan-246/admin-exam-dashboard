@@ -1,21 +1,29 @@
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://classroom-backend-s22x.onrender.com";
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://classroom-backend-s22x.onrender.com/api";
 
-export async function apiFetch(path, options = {}) {
-  const res = await fetch(BASE_URL + path, {
+export const apiFetch = async (url, options = {}) => {
+  const token = localStorage.getItem("adminToken");
+
+  const res = await fetch(`${API_BASE}${url}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
+      ...(token && { Authorization: `Bearer ${token}` }),
     },
-    ...options,
   });
 
-  const data = await res.json();
+  if (res.status === 204) return null;
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {}
 
   if (!res.ok) {
-    throw new Error(data.message || "API error");
+    throw new Error(data?.message || "API error");
   }
 
   return data;
-}
+};
