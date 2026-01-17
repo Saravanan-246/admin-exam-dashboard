@@ -1,0 +1,196 @@
+/* ================= ROOT ================= */
+
+.eval-root {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: #e6edf3;
+}
+
+/* ================= HEADER ================= */
+
+.eval-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.eval-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+/* ================= TOOLBAR ================= */
+
+.eval-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.eval-search,
+.eval-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #010409;
+  border: 1px solid #30363d;
+  font-size: 13px;
+}
+
+.eval-search input,
+.eval-filter select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e6edf3;
+}
+
+/* ================= TABLE ================= */
+
+.eval-table {
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.eval-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.eval-table thead {
+  background: #161b22;
+  color: #8b949e;
+}
+
+.eval-table th,
+.eval-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #21262d;
+}
+
+.eval-table tbody tr:hover {
+  background: #161b22;
+}
+
+/* ================= BADGES ================= */
+
+.eval-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.eval-badge.pending {
+  background: #3d2c00;
+  color: #f2cc60;
+}
+
+.eval-badge.in-progress {
+  background: #0a3069;
+  color: #79c0ff;
+}
+
+.eval-badge.completed {
+  background: #0f5132;
+  color: #7ee787;
+}
+
+/* ================= ACTIONS ================= */
+
+.eval-actions {
+  text-align: right;
+}
+
+.eval-actions button {
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #f0f6fc;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: inline-flex;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.eval-actions button:hover {
+  background: #30363d;
+}
+
+/* ================= EMPTY ================= */
+
+.eval-empty {
+  text-align: center;
+  padding: 48px;
+  color: #8b949e;
+}
+
+/* ================= MODAL ================= */
+
+.eval-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.eval-modal {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  padding: 22px;
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eval-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.eval-modal-sub {
+  font-size: 13px;
+  color: #8b949e;
+}
+
+.eval-modal textarea {
+  background: #010409;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 10px;
+  color: #e6edf3;
+  resize: none;
+}
+
+.eval-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.eval-modal-actions button {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #f0f6fc;
+}
+
+.eval-modal-actions .primary {
+  background: #238636;
+  border-color: #238636;
+}

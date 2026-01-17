@@ -1,44 +1,79 @@
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "../styles/navbar.css";
 
 export default function Navbar() {
-  const { darkMode, toggleTheme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  /* ================= CLOSE ON OUTSIDE CLICK ================= */
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  /* ================= HANDLERS ================= */
+  const openProfile = () => {
+    setOpen(false);
+    navigate("/admin/profile");
+  };
+
+  const initials =
+    user?.displayName?.charAt(0)?.toUpperCase() || "A";
 
   return (
-    <div
-      className={`w-full h-16 flex items-center justify-between px-6 transition-all
-      ${darkMode ? "bg-[#0B1220] text-white" : "bg-white text-gray-800"}
-      shadow-sm`}
-    >
-      {/* Left Section */}
-      <h2 className="text-lg font-semibold tracking-tight">
-        Admin Panel
-      </h2>
+    <header className="navbar">
+      {/* LEFT */}
+      <div className="navbar-title">Admin Panel</div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-4">
-
-        {/* Theme Switch */}
+      {/* RIGHT / PROFILE */}
+      <div className="navbar-profile" ref={wrapperRef}>
         <button
-          onClick={toggleTheme}
-          className={`p-2 rounded-lg transition hover:scale-95 shadow-sm
-          ${darkMode ? "bg-[#1E293B]" : "bg-[#F5F7FA]"}`}
+          className="avatar"
+          onClick={() => setOpen((p) => !p)}
+          aria-label="Open profile menu"
         >
-          {darkMode ? (
-            <Sun size={20} className="text-yellow-300" />
-          ) : (
-            <Moon size={20} />
-          )}
+          {initials}
         </button>
 
-        {/* Profile Avatar */}
-        <div
-          className="w-10 h-10 rounded-full bg-[#0A66C2] flex items-center justify-center 
-          text-white font-semibold cursor-pointer hover:scale-95 transition"
-        >
-          SA
+       {open && (
+  <div className="profile-dropdown">
+    <div className="profile-header">
+      <div className="profile-avatar-lg">
+        {initials}
+      </div>
+
+      <div className="profile-meta">
+        <div className="profile-name">
+          {user?.displayName || "Admin"}
+        </div>
+        <div className="profile-email">
+          {user?.email}
         </div>
       </div>
     </div>
+
+    <div className="profile-divider" />
+
+    <button
+      className="profile-link"
+      onClick={openProfile}
+    >
+      View Profile
+    </button>
+  </div>
+)}
+</div>
+    </header>
   );
 }

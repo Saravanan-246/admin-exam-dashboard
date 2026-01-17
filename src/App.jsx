@@ -1,11 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Admin Auth
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 
-// Admin Pages
+// Admin Layout
 import AdminLayout from "./layout/AdminLayout.jsx";
+
+// Admin Pages
 import Dashboard from "./pages/Dashboard.jsx";
 import Classes from "./pages/Classes.jsx";
 import CreateExam from "./pages/CreateExam.jsx";
@@ -14,43 +16,64 @@ import Evaluations from "./pages/Evaluations.jsx";
 import Students from "./pages/Students.jsx";
 import WorkClass from "./pages/WorkClass.jsx";
 import ReviewExam from "./pages/ReviewExam.jsx";
+import Profile from "./pages/Profile.jsx";
 
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
+// 🔐 ADMIN ROUTE GUARD
+import AdminProtectedRoute from "./components/AdminProtectedRoute.jsx";
 
 export default function App() {
+  const adminToken = localStorage.getItem("adminToken");
+
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* First page = admin login */}
-        <Route path="/" element={<Login />} />
+        {/* ROOT */}
+        <Route path="/" element={<Navigate to="/admin/login" replace />} />
 
-        {/* -------- ADMIN AUTH -------- */}
-        <Route path="/admin/login" element={<Login />} />
-        <Route path="/admin/signup" element={<Signup />} />
-
-        {/* -------- ADMIN SECTION (Protected) -------- */}
+        {/* AUTH */}
         <Route
-          path="/admin/*"
+          path="/admin/login"
           element={
-            <ProtectedRoute>
+            adminToken
+              ? <Navigate to="/admin/dashboard" replace />
+              : <Login />
+          }
+        />
+
+        <Route
+          path="/admin/signup"
+          element={
+            adminToken
+              ? <Navigate to="/admin/dashboard" replace />
+              : <Signup />
+          }
+        />
+
+        {/* 🔐 PROTECTED ADMIN AREA */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
               <AdminLayout />
-            </ProtectedRoute>
+            </AdminProtectedRoute>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="classes" element={<Classes />} />
+          <Route path="classes/:id" element={<WorkClass />} />
           <Route path="create-exam" element={<CreateExam />} />
           <Route path="questions" element={<QuestionBank />} />
           <Route path="evaluate" element={<Evaluations />} />
-          <Route path="students" element={<Students />} />
-          <Route path="class/:id" element={<WorkClass />} />
           <Route path="evaluate/review" element={<ReviewExam />} />
+          <Route path="students" element={<Students />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Fallback: any unknown route → Login */}
-        <Route path="*" element={<Login />} />
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/admin/login" replace />} />
+
       </Routes>
     </BrowserRouter>
   );

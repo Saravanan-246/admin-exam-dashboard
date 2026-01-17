@@ -1,9 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Calendar, Clock, FilePlus, Layers } from "lucide-react";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
+import "../styles/admin.css";
+
+/* ================= HELPERS ================= */
+const getData = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
 
 export default function CreateExam() {
-  const { darkMode } = useTheme();
+  const navigate = useNavigate();
+
+  // ✅ SAFE ADMIN NAVIGATOR
+  const goAdmin = (path) => navigate(`/admin${path}`);
 
   const [classes, setClasses] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -18,167 +33,148 @@ export default function CreateExam() {
     marks: "",
   });
 
-  // Load Class List
-  useEffect(() => {
-    const stored = localStorage.getItem("classes");
-    if (stored) setClasses(JSON.parse(stored));
-  }, []);
-
-  const saveExam = () => {
-    if (!examData.title.trim() || !examData.classId) {
-      alert("⚠ Please fill exam name and select class!");
-      return;
+useEffect(() => {
+  const loadClasses = async () => {
+    try {
+      const data = await apiFetch("/classes");
+      setClasses(data);
+    } catch (err) {
+      console.error("Failed to load classes", err);
     }
-
-    setSaving(true);
-
-    setTimeout(() => {
-      const previous = JSON.parse(localStorage.getItem("exams") || "[]");
-      previous.push({ id: Date.now(), ...examData });
-
-      localStorage.setItem("exams", JSON.stringify(previous));
-      setSaving(false);
-
-      alert("🎉 Exam successfully created!");
-
-      setExamData({
-        title: "",
-        subject: "",
-        classId: "",
-        date: "",
-        time: "",
-        duration: "",
-        marks: "",
-      });
-    }, 700);
   };
 
-  const baseInput = `
-    w-full p-3 rounded-xl border outline-none transition-all
-    focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2]
-  `;
+  loadClasses();
+}, []);
+
+
+  /* Update field */
+  const updateField = useCallback((key, value) => {
+    setExamData((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  /* Save exam */
+const saveExam = async () => {
+  if (!examData.title.trim() || !examData.classId) return;
+
+  try {
+    setSaving(true);
+
+    await apiFetch("/exams", {
+      method: "POST",
+      body: JSON.stringify({
+        title: examData.title,
+        subject: examData.subject,
+        classId: examData.classId,
+        date: examData.date,
+        time: examData.time,
+        duration: examData.duration,
+        marks: examData.marks,
+        published: true, // 🔥 important for student visibility
+      }),
+    });
+
+    goAdmin("/dashboard");
+  } catch (err) {
+    alert(err.message || "Failed to create exam");
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="admin-root">
+      <div className="exam-wrapper">
 
-      {/* Header */}
-      <div>
-        <h1 className={`text-3xl font-semibold ${
-          darkMode ? "text-white" : "text-[#0A66C2]"
-        }`}>
-          Create Exam
-        </h1>
-        <p className="text-gray-500 mt-1 text-sm">Schedule exams and assign to classes.</p>
-      </div>
-
-      {/* Form Container */}
-      <div className={`p-8 rounded-2xl border shadow-lg transition ${
-        darkMode ? "bg-[#0d1424] border-[#2b3244] text-white" : "bg-white border-[#E2E8F0]"
-      }`}>
-
-        {/* Section Title */}
-        <div className="mb-6 flex items-center gap-2 text-lg font-semibold">
-          <Layers size={20} /> Exam Details
+        {/* HEADER */}
+        <div className="exam-header">
+          <div className="exam-title">Create Exam</div>
+          <div className="exam-subtitle">
+            Schedule exams and assign them to classes
+          </div>
         </div>
 
-        <div className="space-y-5">
+        {/* FORM */}
+        <div className="exam-card">
+          <div className="exam-section-title">
+            <Layers size={18} /> Exam Details
+          </div>
 
-          {/* Title */}
-          <input
-            className={`${baseInput} ${
-              darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-            }`}
-            placeholder="Exam Title (Example: Mid Term)"
-            value={examData.title}
-            onChange={(e) => setExamData({ ...examData, title: e.target.value })}
-          />
+          <div className="space-y-4">
+            <input
+              className="exam-input"
+              placeholder="Exam Title"
+              value={examData.title}
+              onChange={(e) => updateField("title", e.target.value)}
+            />
 
-          {/* Subject */}
-          <input
-            className={`${baseInput} ${
-              darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-            }`}
-            placeholder="Subject (Example: Science)"
-            value={examData.subject}
-            onChange={(e) => setExamData({ ...examData, subject: e.target.value })}
-          />
+            <input
+              className="exam-input"
+              placeholder="Subject"
+              value={examData.subject}
+              onChange={(e) => updateField("subject", e.target.value)}
+            />
 
-          {/* Class Selector */}
-          <select
-            className={`${baseInput} cursor-pointer ${
-              darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-            }`}
-            value={examData.classId}
-            onChange={(e) => setExamData({ ...examData, classId: e.target.value })}
+            <select
+              className="exam-input"
+              value={examData.classId}
+              onChange={(e) => updateField("classId", e.target.value)}
+            >
+              <option value="">Select Class</option>
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} — {cls.teacher}
+                </option>
+              ))}
+            </select>
+
+            <div className="exam-grid-2">
+              <div className="exam-input-icon">
+                <Calendar size={16} />
+                <input
+                  type="date"
+                  className="exam-input"
+                  value={examData.date}
+                  onChange={(e) => updateField("date", e.target.value)}
+                />
+              </div>
+
+              <div className="exam-input-icon">
+                <Clock size={16} />
+                <input
+                  type="time"
+                  className="exam-input"
+                  value={examData.time}
+                  onChange={(e) => updateField("time", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="exam-grid-2">
+              <input
+                className="exam-input"
+                placeholder="Duration (minutes)"
+                value={examData.duration}
+                onChange={(e) => updateField("duration", e.target.value)}
+              />
+
+              <input
+                className="exam-input"
+                placeholder="Total Marks"
+                value={examData.marks}
+                onChange={(e) => updateField("marks", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button
+            className="exam-submit"
+            onClick={saveExam}
+            disabled={saving}
           >
-            <option value="">Select Class</option>
-            {classes.map(cls => (
-              <option key={cls.id} value={cls.id}>
-                {cls.name} — {cls.teacher}
-              </option>
-            ))}
-          </select>
-
-          {/* Date & Time */}
-          <div className="grid grid-cols-2 gap-5">
-            <div className="relative">
-              <Calendar size={18} className="absolute left-3 top-3 opacity-60" />
-              <input
-                type="date"
-                className={`${baseInput} pl-10 ${
-                  darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-                }`}
-                value={examData.date}
-                onChange={(e) => setExamData({ ...examData, date: e.target.value })}
-              />
-            </div>
-
-            <div className="relative">
-              <Clock size={18} className="absolute left-3 top-3 opacity-60" />
-              <input
-                type="time"
-                className={`${baseInput} pl-10 ${
-                  darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-                }`}
-                value={examData.time}
-                onChange={(e) => setExamData({ ...examData, time: e.target.value })}
-              />
-            </div>
-          </div>
-
-          {/* Duration & Marks */}
-          <div className="grid grid-cols-2 gap-5">
-            <input
-              className={`${baseInput} ${
-                darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-              }`}
-              placeholder="Duration (Minutes)"
-              value={examData.duration}
-              onChange={(e) => setExamData({ ...examData, duration: e.target.value })}
-            />
-
-            <input
-              className={`${baseInput} ${
-                darkMode ? "bg-[#182135] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-              }`}
-              placeholder="Total Marks"
-              value={examData.marks}
-              onChange={(e) => setExamData({ ...examData, marks: e.target.value })}
-            />
-          </div>
+            <FilePlus size={16} style={{ marginRight: 6 }} />
+            {saving ? "Saving..." : "Create Exam"}
+          </button>
         </div>
-
-        {/* Submit Button */}
-        <button
-          onClick={saveExam}
-          disabled={saving}
-          className={`w-full mt-8 py-3 rounded-xl text-white flex items-center justify-center gap-2
-          transition-all shadow-md active:scale-[.97]
-          ${saving ? "bg-gray-500 cursor-not-allowed" : "bg-[#0A66C2] hover:bg-[#005fd8]"}`}
-        >
-          <FilePlus size={20} />
-          {saving ? "Saving..." : "Create Exam"}
-        </button>
       </div>
     </div>
   );

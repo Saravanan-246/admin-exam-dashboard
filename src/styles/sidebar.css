@@ -1,0 +1,160 @@
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 248px;
+  background: #0d1117;
+  border-right: 1px solid #21262d;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease;
+  z-index: 50;
+}
+
+.sidebar.collapsed {
+  width: 76px;
+}
+
+/* header */
+.sidebar-header {
+  height: 56px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #21262d;
+}
+
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c9d1d9;
+}
+
+.sidebar-toggle {
+  padding: 6px;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover {
+  background: #161b22;
+  color: #c9d1d9;
+}
+
+/* nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #8b949e;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: #161b22;
+  color: #c9d1d9;
+}
+
+.sidebar-link.active {
+  background: #161b22;
+  color: #ffffff;
+}
+
+/* footer */
+.sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid #21262d;
+}
+
+.sidebar-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #8b949e;
+}
+
+.sidebar-logout:hover {
+  background: #161b22;
+  color: #c9d1d9;
+}
+
+/* ================= MODAL ================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  width: 320px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 6px;
+}
+
+.modal-text {
+  font-size: 13px;
+  color: #8b949e;
+  margin-bottom: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-muted {
+  font-size: 13px;
+  color: #8b949e;
+}
+
+.btn-muted:hover {
+  color: #ffffff;
+}
+
+.btn-danger {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  background: #161b22;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: #21262d;
+}

@@ -1,106 +1,149 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Edit3, FileQuestion, Filter } from "lucide-react";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { useSearchParams } from "react-router-dom";
+import {
+  Plus,
+  Search,
+  Trash2,
+  Edit3,
+  FileQuestion,
+  Image as ImageIcon,
+  X,
+} from "lucide-react";
+import { apiFetch } from "../services/api";
+import "../styles/question-bank.css";
 
+ 
 export default function QuestionBank() {
-  const { darkMode } = useTheme();
-
   const [questions, setQuestions] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
 
-  const [form, setForm] = useState({
+  const [modal, setModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+
+  const emptyForm = {
     question: "",
     type: "MCQ",
     answer: "",
-  });
+    image: null,
+  };
 
-  // Load from LocalStorage
+  const [form, setForm] = useState(emptyForm);
+
+  // 🔗 GET examId FROM URL
+  const [params] = useSearchParams();
+  const examId = params.get("examId");
+
+  /* LOAD QUESTIONS FROM BACKEND */
   useEffect(() => {
-    const stored = localStorage.getItem("questionBank");
-    if (stored) setQuestions(JSON.parse(stored));
-  }, []);
+    if (!examId) return;
 
-  // Save
-  useEffect(() => {
-    localStorage.setItem("questionBank", JSON.stringify(questions));
-  }, [questions]);
+    const loadQuestions = async () => {
+      try {
+        const res = await apiFetch(`/exams/${examId}`);
+        setQuestions(res.exam.questions || []);
+      } catch (err) {
+        alert("Failed to load questions");
+      }
+    };
 
-  const saveQuestion = () => {
-    if (!form.question.trim()) return alert("⚠ Question cannot be empty.");
+    loadQuestions();
+  }, [examId]);
 
-    if (editing) {
-      setQuestions((prev) =>
-        prev.map((q) => (q.id === editing.id ? { ...editing, ...form } : q))
-      );
-      setEditing(null);
-    } else {
-      setQuestions([...questions, { id: Date.now(), ...form }]);
+  /* IMAGE UPLOAD (BASE64 – OK TO KEEP) */
+  const handleImage = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () =>
+      setForm((prev) => ({ ...prev, image: reader.result }));
+    reader.readAsDataURL(file);
+  };
+
+  /* RESET FORM */
+  const closeModal = () => {
+    setForm(emptyForm);
+    setEditingId(null);
+    setModal(false);
+  };
+
+  /* SAVE QUESTION → BACKEND */
+  const saveQuestion = async () => {
+    if (!form.question.trim()) return;
+
+    try {
+      if (editingId) {
+        await apiFetch(`/exams/${examId}/questions/${editingId}`, {
+          method: "PUT",
+          body: JSON.stringify(form),
+        });
+      } else {
+        await apiFetch(`/exams/${examId}/questions`, {
+          method: "POST",
+          body: JSON.stringify(form),
+        });
+      }
+
+      const updated = await apiFetch(`/exams/${examId}`);
+      setQuestions(updated.exam.questions);
+      closeModal();
+    } catch (err) {
+      alert(err.message || "Failed to save question");
     }
-
-    setForm({ question: "", type: "MCQ", answer: "" });
-    setModalOpen(false);
   };
 
-  const deleteQuestion = (id) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== id));
+  /* DELETE QUESTION → BACKEND */
+  const confirmDelete = async () => {
+    try {
+      await apiFetch(`/exams/${examId}/questions/${deleteId}`, {
+        method: "DELETE",
+      });
+
+      setQuestions((prev) => prev.filter((q) => q._id !== deleteId));
+      setDeleteId(null);
+    } catch {
+      alert("Delete failed");
+    }
   };
 
-  const filteredQuestions = questions.filter((q) => {
-    const matchSearch = q.question.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === "All" || q.type === filter;
-    return matchSearch && matchFilter;
+  /* FILTER (UNCHANGED) */
+  const filtered = questions.filter((q) => {
+    const matchSearch = q.question
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchType = filter === "All" || q.type === filter;
+    return matchSearch && matchType;
   });
 
   return (
-    <div className="p-6 space-y-8">
-
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="qb-root">
+      {/* HEADER */}
+      <div className="qb-header">
         <div>
-          <h1 className={`text-3xl font-semibold ${darkMode ? "text-white" : "text-[#0A66C2]"}`}>
-            Question Bank
-          </h1>
-          <p className="opacity-60 text-sm mt-1">
-            Store, organize and reuse questions across exams.
-          </p>
+          <div className="qb-title">Question Bank</div>
+          <div className="qb-subtitle">
+            Create and reuse questions across exams
+          </div>
         </div>
 
-        <button
-          onClick={() => setModalOpen(true)}
-          className="bg-[#0A66C2] text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-[#0952a5] transition"
-        >
-          <Plus size={18} /> Add Question
+        <button className="qb-btn" onClick={() => setModal(true)}>
+          <Plus size={14} /> Add Question
         </button>
       </div>
 
-      {/* Search + Filter */}
-      <div className="flex flex-wrap gap-4 items-center">
-
-        <div
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border max-w-sm w-full ${
-            darkMode ? "bg-[#0d1324] border-[#334155] text-white" : "bg-white border-gray-300"
-          }`}
-        >
-          <Search size={18} className="opacity-60" />
+      {/* TOOLBAR */}
+      <div className="qb-toolbar">
+        <div className="qb-search">
+          <Search size={14} />
           <input
-            placeholder="Search questions..."
-            className="bg-transparent outline-none w-full"
+            placeholder="Search question"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-2 opacity-70">
-          <Filter size={18} /> Type:
-        </div>
-
         <select
-          className={`px-4 py-2 rounded-xl border cursor-pointer ${
-            darkMode ? "bg-[#141d31] border-[#374151] text-gray-200" : "bg-white border-gray-300"
-          }`}
+          className="qb-filter"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
@@ -111,94 +154,177 @@ export default function QuestionBank() {
         </select>
       </div>
 
-      {/* Question List */}
-      <div
-        className={`rounded-xl border shadow-sm overflow-hidden ${
-          darkMode ? "bg-[#111827] border-[#374151]" : "bg-white border-[#e2e8f0]"
-        }`}
-      >
-        <table className="w-full text-sm">
-          <thead
-            className={`${darkMode ? "bg-[#1e2535] text-gray-300" : "bg-gray-100 text-gray-600"}`}
-          >
+      {/* TABLE */}
+      <div className="qb-table">
+        <table>
+          <thead>
             <tr>
-              <th className="p-4 text-left">Question</th>
-              <th className="p-4 text-left">Type</th>
-              <th className="p-4 text-left">Answer</th>
-              <th className="p-4 text-right">Actions</th>
+              <th>Question</th>
+              <th>Type</th>
+              <th>Answer</th>
+              <th style={{ textAlign: "right" }}>Actions</th>
             </tr>
           </thead>
+<tbody>
+  {filtered.map((q) => (
+    <tr key={q._id}>
+      <td>
+        <div className="qb-qcell">
+          <span>{q.question}</span>
+          {q.image && (
+            <img
+              src={q.image}
+              alt="question"
+              className="qb-img"
+            />
+          )}
+        </div>
+      </td>
 
-          <tbody>
-            {filteredQuestions.map((q) => (
-              <tr
-                key={q.id}
-                className={`border-b ${
-                  darkMode ? "border-[#374151] hover:bg-[#182133]" : "hover:bg-gray-50"
-                }`}
-              >
-                <td className="p-4">{q.question}</td>
-                <td className="p-4 font-medium">
-                  <span
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      darkMode
-                        ? "bg-[#243044] text-gray-200"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    {q.type}
-                  </span>
-                </td>
-                <td className="p-4 opacity-75">{q.answer || "—"}</td>
+      <td>
+        <span className="qb-badge">{q.type}</span>
+      </td>
 
-                <td className="p-4 text-right flex justify-end gap-3">
-                  <Edit3
-                    size={18}
-                    className="cursor-pointer hover:text-blue-500"
-                    onClick={() => {
-                      setEditing(q);
-                      setForm(q);
-                      setModalOpen(true);
-                    }}
-                  />
-                  <Trash2
-                    size={18}
-                    className="cursor-pointer text-red-500 hover:scale-110 transition"
-                    onClick={() => deleteQuestion(q.id)}
-                  />
-                </td>
-              </tr>
-            ))}
+      <td>{q.answer || "—"}</td>
 
-            {filteredQuestions.length === 0 && (
-              <tr>
-                <td colSpan="4" className="py-12 text-center opacity-50 text-sm">
-                  <FileQuestion size={40} className="mx-auto mb-2 opacity-40" />
-                  No matching questions found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <td className="qb-actions">
+        <Edit3
+          size={16}
+          onClick={() => {
+            setEditingId(q._id);
+            setForm({
+              question: q.question,
+              type: q.type,
+              answer: q.answer,
+              image: q.image || null,
+            });
+            setModal(true);
+          }}
+        />
+        <Trash2
+          size={16}
+          onClick={() => setDeleteId(q._id)}
+        />
+      </td>
+    </tr>
+  ))}
+
+       {filtered.length === 0 && (
+  <tr>
+    <td colSpan="4" className="qb-empty">
+      <FileQuestion size={36} />
+      <div>No questions found</div>
+    </td>
+  </tr>
+)}
+</tbody>
+</table>
+</div>
+
+{/* ADD / EDIT MODAL */}
+{modal && (
+  <div className="qb-overlay">
+    <div className="qb-modal">
+      <div className="qb-modal-title">
+        {editingId ? "Edit Question" : "Add Question"}
       </div>
-    </div>
-  );
-}
 
-/* Modal Component */
-function Modal({ children, darkMode, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex justify-center items-center z-50">
-      <div
-        className={`p-6 w-full max-w-md rounded-2xl border shadow-lg relative animate-fade ${
-          darkMode ? "bg-[#0f172a] border-[#374151] text-white" : "bg-white"
-        }`}
+      <textarea
+        className="qb-input"
+        rows={3}
+        placeholder="Enter question"
+        value={form.question}
+        onChange={(e) =>
+          setForm({ ...form, question: e.target.value })
+        }
+      />
+
+      <label className="qb-upload">
+        <ImageIcon size={14} /> Upload Image
+        <input
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={(e) => handleImage(e.target.files[0])}
+        />
+      </label>
+
+      {form.image && (
+        <div className="qb-preview">
+          <img src={form.image} alt="preview" />
+          <button
+            onClick={() =>
+              setForm((p) => ({ ...p, image: null }))
+            }
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <select
+        className="qb-input"
+        value={form.type}
+        onChange={(e) =>
+          setForm({ ...form, type: e.target.value })
+        }
       >
-        {children}
-        <button className="absolute top-3 right-3 text-gray-400 hover:text-red-400" onClick={onClose}>
-          ✖
+        <option>MCQ</option>
+        <option>True/False</option>
+        <option>Short Answer</option>
+      </select>
+
+      <input
+        className="qb-input"
+        placeholder="Answer (optional)"
+        value={form.answer}
+        onChange={(e) =>
+          setForm({ ...form, answer: e.target.value })
+        }
+      />
+
+      <div className="qb-modal-actions">
+        <button className="qb-btn" onClick={closeModal}>
+          Cancel
+        </button>
+        <button
+          className="qb-btn primary"
+          onClick={saveQuestion}
+          disabled={!form.question.trim()}
+        >
+          Save
         </button>
       </div>
     </div>
-  );
+  </div>
+)}
+
+{/* DELETE CONFIRM */}
+{deleteId && (
+  <div className="qb-overlay">
+    <div className="qb-modal">
+      <div className="qb-modal-title">Delete Question?</div>
+      <p className="qb-subtitle">
+        This action cannot be undone.
+      </p>
+
+      <div className="qb-modal-actions">
+        <button
+          className="qb-btn"
+          onClick={() => setDeleteId(null)}
+        >
+          Cancel
+        </button>
+        <button
+          className="qb-btn primary"
+          onClick={confirmDelete}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+</div>
+);
 }

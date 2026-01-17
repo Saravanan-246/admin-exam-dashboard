@@ -1,0 +1,140 @@
+/* ================= ROOT ================= */
+
+.students-root {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: #e6edf3;
+}
+
+/* ================= HEADER ================= */
+
+.students-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.students-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.students-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.students-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 2px;
+}
+
+/* ================= SEARCH ================= */
+
+.students-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #010409;
+  border: 1px solid #30363d;
+  font-size: 13px;
+}
+
+.students-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e6edf3;
+}
+
+/* ================= TABLE ================= */
+
+.students-table {
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.students-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.students-table thead {
+  background: #161b22;
+  color: #8b949e;
+}
+
+.students-table th,
+.students-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #21262d;
+}
+
+.students-table tbody tr:hover {
+  background: #161b22;
+}
+
+/* ================= CELLS ================= */
+
+.rank {
+  font-weight: 600;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.class {
+  color: #8b949e;
+}
+
+.score {
+  font-weight: 700;
+  color: #7ee787;
+}
+
+.badge {
+  font-size: 12px;
+}
+
+.actions {
+  text-align: right;
+}
+
+.actions svg {
+  cursor: pointer;
+  color: #f85149;
+}
+
+.actions svg:hover {
+  opacity: 0.8;
+}
+
+/* ================= EMPTY ================= */
+
+.students-empty {
+  text-align: center;
+  padding: 48px;
+  color: #8b949e;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 640px) {
+  .students-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

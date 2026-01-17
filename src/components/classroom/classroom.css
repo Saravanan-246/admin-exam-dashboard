@@ -1,0 +1,180 @@
+/* Page */
+.classroom-page {
+  min-height: 100vh;
+  background: #0d1117;
+  padding: 24px;
+  color: #c9d1d9;
+}
+
+/* Tabs */
+.class-tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid #30363d;
+  margin-bottom: 20px;
+}
+
+.class-tab {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 14px 4px;
+  background: none;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 14px;
+  position: relative;
+}
+
+.class-tab:hover {
+  color: #c9d1d9;
+}
+
+.class-tab.active {
+  color: #2f81f7;
+}
+
+.class-tab::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #2f81f7;
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+
+.class-tab.active::after {
+  transform: scaleX(1);
+}
+
+/* Content */
+.class-content {
+  padding-top: 16px;
+}
+
+/* Card */
+.gc-card {
+  background: #161b22;
+  color: #c9d1d9;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #30363d;
+}
+
+/* Center */
+.center-card {
+  text-align: center;
+}
+
+/* Students header */
+.students-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.students-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Add button */
+.add-btn {
+  background: #2f81f7;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.add-btn:hover {
+  background: #1f6feb;
+}
+
+/* Table head */
+.students-table-head,
+.student-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1fr;
+  padding: 10px 0;
+}
+
+.students-table-head {
+  font-size: 13px;
+  color: #8b949e;
+  border-bottom: 1px solid #30363d;
+}
+
+/* Rows */
+.student-row {
+  border-bottom: 1px solid #30363d;
+}
+
+.student-row:hover {
+  background: #0d1117;
+}
+
+/* Name */
+.student-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Email */
+.student-email {
+  font-size: 13px;
+  color: #8b949e;
+}
+
+/* Actions */
+.student-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #8b949e;
+}
+
+.icon-btn:hover {
+  background: #21262d;
+  color: #c9d1d9;
+}
+
+.icon-btn.danger {
+  color: #f85149;
+}
+
+.icon-btn.danger:hover {
+  background: rgba(248, 81, 73, 0.15);
+}
+
+/* Empty */
+.students-empty {
+  padding: 24px;
+  text-align: center;
+  color: #8b949e;
+}
+
+/* Utils */
+.muted {
+  color: #8b949e;
+}
+
+.icon-primary {
+  color: #2f81f7;
+}

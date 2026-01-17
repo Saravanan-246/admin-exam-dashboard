@@ -1,39 +1,30 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar.jsx";
-import Navbar from "../components/Navbar.jsx";
-import PageContainer from "../theme/PageContainer.jsx";
-import { useTheme } from "../context/ThemeContext.jsx";
+import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const { darkMode } = useTheme();
 
   return (
-    <div
-      className={`flex w-full h-screen overflow-hidden transition-all duration-300 ${
-        darkMode ? "dark bg-[#0F172A] text-white" : "bg-[#F7F9FC] text-gray-900"
-      }`}
-    >
-
-      {/* Sidebar */}
+    <div className="w-full h-screen bg-[#0D1117] text-[#E6EDF3] overflow-hidden flex">
+      
+      {/* SIDEBAR */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      {/* Main Content */}
+      {/* MAIN AREA */}
       <div
-        className="flex flex-col w-full transition-all duration-300"
-        style={{ marginLeft: collapsed ? "80px" : "256px" }}
+        className="flex flex-col flex-1 h-full transition-all duration-300"
+        style={{ marginLeft: collapsed ? 76 : 248 }}
       >
-        {/* Navbar */}
-        <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+        {/* NAVBAR */}
+        <Navbar />
 
-        {/* PAGE CONTENT */}
-        <main className="flex-1 overflow-y-auto">
-          <PageContainer>
-            <div className="p-8">
-              <Outlet /> {/* <-- This replaces children and loads each page */}
-            </div>
-          </PageContainer>
+        {/* CONTENT */}
+        <main className="flex-1 overflow-y-auto bg-[#0D1117]">
+          <div className="px-10 py-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

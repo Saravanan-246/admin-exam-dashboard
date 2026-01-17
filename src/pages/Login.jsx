@@ -1,138 +1,122 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { apiFetch } from "../services/api.js";
+import "../styles/login.css";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { darkMode } = useTheme();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Clear previous logged-in session when user reaches login page
+  // ✅ If already logged in as admin → redirect
   useEffect(() => {
-    localStorage.removeItem("user");
-  }, []);
+    const token = localStorage.getItem("adminToken");
+    const user = JSON.parse(localStorage.getItem("adminUser"));
+    if (token && user?.role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
-    if (!form.email.trim() || !form.password.trim()) {
-      setError("Please enter email and password.");
+    setError("");
+    setLoading(true);
+
+    const email = form.email.trim().toLowerCase();
+    const password = form.password;
+
+    if (!email || !password) {
+      setError("Email and password are required.");
+      setLoading(false);
       return;
     }
 
-    // Get registered users list from localStorage
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    try {
+      const data = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-    const userExists = storedUsers.find(
-      (u) => u.email === form.email.trim() && u.password === form.password.trim()
-    );
+      if (!data?.token || !data?.user) {
+        throw new Error("Invalid login response");
+      }
 
-    if (!userExists) {
-      setError("Invalid email or password.");
-      return;
+      if (data.user.role !== "admin") {
+        throw new Error("Not authorized as admin");
+      }
+
+      // 🔐 STORE ADMIN SESSION
+      localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("adminUser", JSON.stringify(data.user));
+
+      login(data.user); // sync context
+      navigate("/admin/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
-
-    // Store session
-    localStorage.setItem("user", JSON.stringify({ email: form.email }));
-
-    login({ email: form.email });
-
-    navigate("/admin/dashboard", { replace: true });
   };
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-all duration-700 ${
-        darkMode ? "bg-[#0b0f1a]" : "login-gradient"
-      }`}
-    >
+    <div className="login-root">
+      <div className="login-card">
+        {/* HEADER */}
+        <div className="login-header">
+          <h1>Sign in</h1>
+          <p>Continue to Admin Panel</p>
+        </div>
 
-      {/* 🔥 New Modern Background Animation */}
-      <style>{`
-        .login-gradient {
-          background: radial-gradient(circle at top left, #ffffff, #dbe7ff, #c9dbff, #b9ceff);
-          animation: fadeBackground 14s ease-in-out infinite alternate;
-        }
+        {/* ERROR */}
+        {error && <div className="login-error">{error}</div>}
 
-        @keyframes fadeBackground {
-          0% { background-position: 0% 50%; opacity: 1; }
-          100% { background-position: 100% 50%; opacity: 0.95; }
-        }
-      `}</style>
-
-      {/* CARD UI unchanged */}
-      <div
-        className={`w-full max-w-md px-10 py-12 rounded-3xl border shadow-xl backdrop-blur-md transition-all duration-300
-        ${
-          darkMode
-            ? "bg-[#1E293B] border-[#334155] text-white"
-            : "bg-white/70 border-white/40 text-gray-900"
-        }`}
-      >
-
-        <h1 className="text-3xl font-semibold text-center text-[#0A66FF]">
-          Welcome Back 👋
-        </h1>
-
-        <p className={`text-center text-sm mt-1 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-          Login to continue
-        </p>
-
-        {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="space-y-6 mt-8">
-          
-          <div>
-            <label className="text-sm font-medium opacity-80">Email</label>
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="login-field">
+            <label>Email address</label>
             <input
               type="email"
-              autoComplete="off"
+              placeholder="name@example.com"
               value={form.email}
-              placeholder="Enter your email"
-              className={`w-full p-3 mt-1 rounded-xl border transition-all outline-none ${
-                darkMode
-                  ? "bg-[#0F172A] text-white border-[#334155] focus:border-[#0A66FF]"
-                  : "bg-gray-50 border-gray-300 focus:ring-[#0A66FF]/25"
-              }`}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
+              autoComplete="username"
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium opacity-80">Password</label>
+          <div className="login-field">
+            <label>Password</label>
             <input
               type="password"
-              autoComplete="new-password"
+              placeholder="••••••••"
               value={form.password}
-              placeholder="Enter password"
-              className={`w-full p-3 mt-1 rounded-xl border transition-all outline-none ${
-                darkMode
-                  ? "bg-[#0F172A] text-white border-[#334155] focus:border-[#0A66FF]"
-                  : "bg-gray-50 border-gray-300 focus:ring-[#0A66FF]/25"
-              }`}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
+              autoComplete="current-password"
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-[#0A66FF] text-white font-medium text-lg hover:bg-[#0057E0] active:scale-95 transition-all shadow-md hover:shadow-xl"
-          >
-            Login
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <p className={`text-center text-sm mt-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-          New here?{" "}
-          <Link to="/admin/signup" className="text-[#0A66FF] font-medium hover:underline">
-            Create Account
-          </Link>
-        </p>
-
+        {/* FOOTER */}
+        <div className="login-footer">
+          New here? <Link to="/admin/signup">Create an account</Link>
+        </div>
       </div>
     </div>
   );

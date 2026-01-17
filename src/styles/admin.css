@@ -1,0 +1,765 @@
+/* ================= ADMIN DASHBOARD ================= */
+
+.admin-root {
+  width: 100%;
+  min-height: 100vh;
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+/* layout spacing */
+.admin-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* card / section */
+.admin-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 18px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.admin-card:hover {
+  border-color: #484f58;
+}
+
+/* header */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.admin-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+/* stats grid */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+/* stat card */
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+
+.stat-value {
+  font-size: 34px;
+  font-weight: 600;
+  margin-top: 10px;
+  color: #f0f6fc;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn-primary {
+  background: #21262d;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #30363d;
+  border-color: #8b949e;
+}
+
+.btn-primary:disabled {
+  background: #161b22;
+  color: #6e7681;
+  border-color: #30363d;
+  cursor: not-allowed;
+}
+
+/* quick actions */
+.admin-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1024px) {
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-title {
+    font-size: 22px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* ================= CREATE EXAM ================= */
+
+.exam-wrapper {
+  max-width: 720px;
+}
+
+.exam-header {
+  margin-bottom: 24px;
+}
+
+.exam-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.exam-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+.exam-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.exam-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #f0f6fc;
+}
+
+/* inputs */
+.exam-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #e6edf3;
+  font-size: 14px;
+}
+
+.exam-input::placeholder {
+  color: #8b949e;
+}
+
+.exam-input:focus {
+  outline: none;
+  border-color: #8b949e;
+}
+
+/* icon input */
+.exam-input-icon {
+  position: relative;
+}
+
+.exam-input-icon svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8b949e;
+}
+
+.exam-input-icon input {
+  padding-left: 34px;
+}
+
+/* grid */
+.exam-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* submit button */
+.exam-submit {
+  margin-top: 24px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #e6edf3;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.exam-submit:hover {
+  background: #30363d;
+  border-color: #8b949e;
+}
+
+.exam-submit:disabled {
+  background: #161b22;
+  color: #6e7681;
+  cursor: not-allowed;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 640px) {
+  .exam-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-title {
+    font-size: 22px;
+  }
+}
+
+
+
+/* ================= CLASSES PAGE ================= */
+
+.classes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.classes-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.classes-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+/* ================= GRID ================= */
+
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+/* ================= CLASS CARD ================= */
+
+.class-card {
+  background: linear-gradient(180deg, #0d1117 0%, #0b0f14 100%);
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.class-card:hover {
+  background: #161b22;
+  border-color: #484f58;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ================= TITLE + TEACHER ================= */
+
+.class-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  line-height: 1.3;
+}
+
+.class-teacher {
+  font-size: 13px;
+  color: #8b949e;
+  margin-top: 6px;
+}
+
+/* ================= ACTION ICONS ================= */
+
+.class-actions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 12px;
+  color: #8b949e;
+}
+
+.class-actions svg {
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.class-actions svg:hover {
+  color: #f0f6fc;
+  transform: scale(1.15);
+}
+
+/* ================= FOOTER ================= */
+
+.class-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* class code pill */
+
+.class-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: #161b22;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+}
+
+.class-code svg {
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.class-code svg:hover {
+  opacity: 1;
+}
+
+/* students count */
+
+.class-students {
+  font-size: 12px;
+  color: #8b949e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ================= EMPTY STATE ================= */
+
+.classes-empty {
+  padding: 48px;
+  text-align: center;
+  color: #8b949e;
+  font-size: 14px;
+  border-radius: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 640px) {
+  .classes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .class-card {
+    padding: 16px;
+  }
+}
+
+/* ================= MODAL ================= */
+
+.modal-box {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 16px;
+  padding: 22px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  animation: modalIn 0.18s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 18px;
+}
+
+/* ================= INPUTS ================= */
+
+.modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #e6edf3;
+  font-size: 14px;
+  margin-bottom: 14px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.modal-input::placeholder {
+  color: #8b949e;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #8b949e;
+  background: #0b0f14;
+}
+
+/* ================= ACTIONS ================= */
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* ================= CLOSE BUTTON ================= */
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: #8b949e;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.modal-close:hover {
+  color: #f0f6fc;
+  transform: scale(1.1);
+}
+
+/* ================= SECONDARY BUTTON ================= */
+
+.btn-secondary {
+  background: transparent;
+  color: #8b949e;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #161b22;
+  color: #f0f6fc;
+  border-color: #484f58;
+}
+
+/* ================= DELETE WARNING ================= */
+
+.modal-warning {
+  font-size: 13px;
+  color: #f85149;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* ================= EMPTY STATE ================= */
+
+.classes-empty {
+  text-align: center;
+  color: #8b949e;
+  border: 1px dashed #30363d;
+  background: #0b0f14;
+  padding: 36px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+/* ================= TOAST ================= */
+
+.admin-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: toastIn 0.2s ease-out;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1024px) {
+  .classes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .classes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .classes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-box {
+    margin: 0 14px;
+  }
+}
+/* ================= WORK CLASS PAGE ================= */
+
+/* Page spacing helper */
+.space-y-10 > * + * {
+  margin-top: 2.5rem;
+}
+
+/* Header */
+.workclass-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.workclass-subtitle {
+  font-size: 13px;
+  color: #8b949e;
+}
+
+/* Back button */
+.workclass-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #8b949e;
+  cursor: pointer;
+}
+
+.workclass-back:hover {
+  color: #c9d1d9;
+}
+
+/* Class code card */
+.class-code-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.class-code-value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+}
+
+.class-code-actions svg {
+  cursor: pointer;
+  color: #8b949e;
+}
+
+.class-code-actions svg:hover {
+  color: #c9d1d9;
+}
+
+/* People header */
+.people-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.people-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+/* Table */
+.workclass-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.workclass-table thead tr {
+  background: #0b0f14;
+  border-bottom: 1px solid #30363d;
+}
+
+.workclass-table th {
+  padding: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  color: #8b949e;
+}
+
+.workclass-table td {
+  padding: 14px;
+  font-size: 14px;
+  border-bottom: 1px solid #30363d;
+}
+
+.workclass-table tr:hover {
+  background: #0b0f14;
+}
+
+/* Actions */
+.workclass-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.workclass-actions svg {
+  cursor: pointer;
+  color: #8b949e;
+}
+
+.workclass-actions svg:hover {
+  color: #c9d1d9;
+}
+
+.workclass-actions .danger {
+  color: #f85149;
+}
+
+/* Empty state */
+.workclass-empty {
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  color: #8b949e;
+}
+
+/* ================= MODAL OVERRIDES ================= */
+
+.modal-box {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 16px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #f0f6fc;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}

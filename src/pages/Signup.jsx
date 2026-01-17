@@ -1,118 +1,144 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { apiFetch } from "../services/api.js";
+import "../styles/signup.css";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { darkMode } = useTheme();
   const { login } = useAuth();
 
-  const [form, setForm] = useState({ displayName: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({
+    displayName: "",
+    email: "",
+    password: "",
+    confirm: "",
+  });
+
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = (e) => {
+  const updateField = (key, value) => {
+    setError("");
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSignup = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
-    if (!form.displayName || !form.email || !form.password || !form.confirm)
-      return setError("All fields are required ❗");
+    setError("");
+    setLoading(true);
 
-    if (form.password !== form.confirm)
-      return setError("Passwords do not match ❌");
+    const displayName = form.displayName.trim();
+    const email = form.email.trim().toLowerCase();
+    const password = form.password;
+    const confirm = form.confirm;
 
-    // Get stored users
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    // ✅ VALIDATION
+    if (!displayName || !email || !password || !confirm) {
+      setError("All fields are required.");
+      setLoading(false);
+      return;
+    }
 
-    // Prevent duplicates
-    const exists = storedUsers.find(u => u.email === form.email);
-    if (exists) return setError("Account already exists ❗");
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
 
-    // Save new user
-    const newUser = { displayName: form.displayName, email: form.email, password: form.password };
-    const updatedUsers = [...storedUsers, newUser];
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    try {
+      const data = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          name: displayName,
+          email,
+          password,
+          role: "admin", // 🔐 FORCE ADMIN
+        }),
+      });
 
-    // Auto login
-    localStorage.setItem("user", JSON.stringify(newUser));
-    login(newUser);
+      if (!data?.token || !data?.user) {
+        throw new Error("Invalid server response");
+      }
 
-    navigate("/admin/dashboard", { replace: true });
+      // 🔥 STORE ADMIN SESSION
+      localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("adminUser", JSON.stringify(data.user));
+
+      login(data.user); // sync AuthContext
+      navigate("/admin/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-all duration-700 ${darkMode ? "bg-[#0B0F1A]" : "signup-bg"}`}>
+    <div className="signup-root">
+      <div className="signup-card">
+        {/* HEADER */}
+        <div className="signup-header">
+          <h1>Create account</h1>
+          <p>Join the admin panel</p>
+        </div>
 
-      {/* Background animation (unchanged UI) */}
-      <style>{`
-        .signup-bg {
-          background: radial-gradient(circle at top right, #ffffff, #e4ebff, #d3e1ff, #c4d6ff);
-          animation: bgWave 14s ease-in-out infinite alternate;
-        }
-        @keyframes bgWave {
-          0% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0.95; transform: scale(1.04); }
-        }
-      `}</style>
+        {/* ERROR */}
+        {error && <div className="signup-error">{error}</div>}
 
-      {/* CARD (UI unchanged) */}
-      <div className={`w-full max-w-md px-10 py-12 rounded-3xl border shadow-xl backdrop-blur-lg transition-all duration-300 ${darkMode ? "bg-[#1E293B] border-[#334155] text-white" : "bg-white/60 border-white/50 text-gray-900"}`}>
-
-        <h1 className="text-3xl font-semibold text-center text-[#0A66FF] tracking-tight">Create Account ✨</h1>
-
-        {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
-
-        <form onSubmit={handleSignup} className="space-y-6 mt-8">
-
-          <div>
-            <label className="text-sm font-medium opacity-80">Display Name</label>
+        {/* FORM */}
+        <form className="signup-form" onSubmit={handleSignup}>
+          <div className="signup-field">
+            <label>Display name</label>
             <input
               type="text"
               placeholder="Your name"
               value={form.displayName}
-              onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-              className="w-full p-3 mt-1 rounded-xl border outline-none"
+              onChange={(e) => updateField("displayName", e.target.value)}
             />
           </div>
 
-          <div>
-            <label>Email</label>
+          <div className="signup-field">
+            <label>Email address</label>
             <input
               type="email"
+              placeholder="name@example.com"
               value={form.email}
-              placeholder="example@gmail.com"
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full p-3 mt-1 rounded-xl border outline-none"
+              onChange={(e) => updateField("email", e.target.value)}
             />
           </div>
 
-          <div>
+          <div className="signup-field">
             <label>Password</label>
             <input
               type="password"
-              value={form.password}
               placeholder="••••••••"
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full p-3 mt-1 rounded-xl border outline-none"
+              value={form.password}
+              onChange={(e) => updateField("password", e.target.value)}
             />
           </div>
 
-          <div>
-            <label>Confirm Password</label>
+          <div className="signup-field">
+            <label>Confirm password</label>
             <input
               type="password"
-              value={form.confirm}
               placeholder="••••••••"
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-              className="w-full p-3 mt-1 rounded-xl border outline-none"
+              value={form.confirm}
+              onChange={(e) => updateField("confirm", e.target.value)}
             />
           </div>
 
-          <button className="w-full py-3 rounded-xl bg-[#0A66FF] text-white">Sign Up</button>
+          <button type="submit" className="signup-btn" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
+          </button>
         </form>
 
-        <p className="text-center mt-6 text-sm">
-          Already have an account? <Link to="/admin/login" className="text-[#0A66FF] font-medium">Login</Link>
-        </p>
+        {/* FOOTER */}
+        <div className="signup-footer">
+          Already have an account? <Link to="/admin/login">Sign in</Link>
+        </div>
       </div>
     </div>
   );

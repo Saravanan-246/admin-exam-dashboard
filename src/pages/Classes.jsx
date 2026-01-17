@@ -1,257 +1,316 @@
-import { useState, useEffect } from "react";
-import { Plus, Copy, Trash2, Pencil, Users } from "lucide-react";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+  Plus,
+  Copy,
+  Trash2,
+  Pencil,
+  Users,
+} from "lucide-react";
+
+import { apiFetch } from "../services/api";
+
+import "../styles/admin.css";
+
+/* ================= UTIL ================= */
+const genCode = () =>
+  Math.random().toString(36).substring(2, 8).toUpperCase() +
+  Math.random().toString(36).substring(2, 4).toUpperCase();
+
 export default function Classes() {
-  const { darkMode } = useTheme();
   const navigate = useNavigate();
+  const bottomRef = useRef(null);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const goAdmin = (path) => navigate(`/admin${path}`);
+
   const [classes, setClasses] = useState([]);
+  const [modal, setModal] = useState(false);
+  const [edit, setEdit] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [toast, setToast] = useState("");
+  const [form, setForm] = useState({ name: "", teacher: "" });
 
-  const [newClass, setNewClass] = useState({
-    name: "",
-    teacher: "",
-  });
-
-  const generateCode = () =>
-    Math.random().toString(36).substring(2, 8).toUpperCase();
-
-  // Load Saved Classes
+  /* ================= LOAD FROM MONGO ================= */
   useEffect(() => {
-    const saved = localStorage.getItem("classes");
-    if (saved) setClasses(JSON.parse(saved));
+    const loadClasses = async () => {
+      try {
+        const data = await apiFetch("/classes");
+        setClasses(
+          data.map((c) => ({
+            ...c,
+            students: Array.isArray(c.students) ? c.students : [],
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to load classes", err);
+      }
+    };
+    loadClasses();
   }, []);
 
-  // Save Automatically
+  /* ================= TOAST AUTO HIDE ================= */
   useEffect(() => {
-    localStorage.setItem("classes", JSON.stringify(classes));
-  }, [classes]);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
-  const createClass = () => {
-    if (!newClass.name.trim()) return;
+  /* ================= CREATE ================= */
+  const createClass = async () => {
+    if (!form.name.trim()) return;
 
-    setClasses([
-      ...classes,
-      {
-        id: Date.now(),
-        name: newClass.name,
-        teacher: newClass.teacher || "Unknown",
-        code: generateCode(),
-        students: Math.floor(Math.random() * 25),
-      },
-    ]);
+    try {
+      const saved = await apiFetch("/classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          teacher: form.teacher.trim() || "Unknown",
+          code: genCode(),
+        }),
+      });
 
-    setNewClass({ name: "", teacher: "" });
-    setModalOpen(false);
+      setClasses((prev) => [...prev, saved]);
+      setForm({ name: "", teacher: "" });
+      setModal(false);
+      setToast("Class created");
+
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } catch {
+      alert("Failed to create class");
+    }
   };
 
-  const deleteClass = (id) => {
-    setClasses((prev) => prev.filter((cls) => cls.id !== id));
+  /* ================= EDIT ================= */
+  const saveEdit = async () => {
+    try {
+      const updated = await apiFetch(`/classes/${edit._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: edit.name,
+          teacher: edit.teacher,
+        }),
+      });
+
+      setClasses((prev) =>
+        prev.map((c) => (c._id === updated._id ? updated : c))
+      );
+      setEdit(null);
+      setToast("Class updated");
+    } catch {
+      alert("Update failed");
+    }
   };
 
-  const saveEdit = () => {
-    setClasses((prev) =>
-      prev.map((cls) => (cls.id === editData.id ? editData : cls))
-    );
-    setEditData(null);
+  /* ================= DELETE ================= */
+  const deleteClass = async () => {
+    try {
+      await apiFetch(`/classes/${confirmDelete._id}`, {
+        method: "DELETE",
+      });
+
+      setClasses((prev) =>
+        prev.filter((c) => c._id !== confirmDelete._id)
+      );
+      setConfirmDelete(null);
+      setToast("Class deleted");
+    } catch {
+      alert("Delete failed");
+    }
   };
 
-  const copyCode = (code) => navigator.clipboard.writeText(code);
+  /* ================= COPY ================= */
+  const copyCode = (e, code) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(code);
+    setToast("Code copied");
+  };
 
+  /* ================= JSX CONTINUES BELOW ================= */
   return (
-    <div className="p-6">
+    <div className="admin-root">
+      <div className="admin-wrapper">
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
-        <h1
-          className={`text-3xl font-semibold ${
-            darkMode ? "text-white" : "text-[#0A66C2]"
-          }`}
-        >
-          Classes
-        </h1>
-
-        <button
-          onClick={() => setModalOpen(true)}
-          className="wave-btn bg-[#0A66C2] text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow hover:bg-[#0d5ccf] active:scale-[0.98] transition-all"
-        >
-          <Plus size={18} /> Create Class
-        </button>
-      </div>
-
-      {/* EMPTY VIEW */}
-      {classes.length === 0 && (
-        <div className="text-center py-16 opacity-60 text-sm">
-          🚀 No classes yet — click <b>Create Class</b> to begin.
-        </div>
-      )}
-
-      {/* CLASS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes.map((cls) => (
-          <div
-            key={cls.id}
-            className={`p-6 rounded-2xl shadow-md cursor-pointer border transition hover:-translate-y-1 hover:shadow-lg relative
-              ${
-                darkMode
-                  ? "bg-[#111827] border-[#374151]"
-                  : "bg-white border-[#E2E8F0]"
-              }`}
-            onClick={() => navigate(`/class/${cls.id}`, { state: cls })}
-          >
-            {/* ACTION BUTTONS */}
-            <div className="absolute top-3 right-3 flex gap-3">
-              <Pencil
-                size={18}
-                className="cursor-pointer hover:text-blue-500 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditData(cls);
-                }}
-              />
-              <Trash2
-                size={18}
-                className="cursor-pointer text-red-500 hover:scale-110 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteClass(cls.id);
-                }}
-              />
-            </div>
-
-            {/* CLASS DETAILS */}
-            <h2 className="text-lg font-semibold">{cls.name}</h2>
-            <p className="text-sm opacity-70">👨‍🏫 {cls.teacher}</p>
-
-            {/* FOOTER */}
-            <div className="mt-5 flex justify-between items-center">
-              <span
-                className={`px-3 py-1 rounded-lg text-xs font-semibold tracking-wide flex items-center gap-2
-                ${
-                  darkMode
-                    ? "bg-[#1f2a3a] text-gray-200"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {cls.code}
-                <Copy
-                  size={14}
-                  className="cursor-pointer hover:scale-125 transition"
-                  onClick={() => copyCode(cls.code)}
-                />
-              </span>
-
-              <span className="text-sm opacity-80 flex items-center gap-1">
-                <Users size={16} /> {cls.students}
-              </span>
+        {/* HEADER */}
+        <div className="admin-card classes-header">
+          <div>
+            <div className="classes-title">Classes</div>
+            <div className="classes-subtitle">
+              Manage classrooms and access codes
             </div>
           </div>
-        ))}
+
+          <button className="btn-primary" onClick={() => setModal(true)}>
+            <Plus size={14} /> Create Class
+          </button>
+        </div>
+
+        {/* EMPTY */}
+        {classes.length === 0 && (
+          <div className="admin-card classes-empty">
+            No classes created yet
+          </div>
+        )}
+
+        {/* GRID */}
+        <div className="classes-grid">
+          {classes.map((c) => (
+            <div
+              key={c._id}                                    
+              className="class-card"
+              onClick={() => goAdmin(`/classes/${c._id}`)}  
+            >
+              <div className="class-actions">
+                <Pencil
+                  size={15}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEdit(c);
+                  }}
+                />
+                <Trash2
+                  size={15}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(c);
+                  }}
+                />
+              </div>
+
+              <div className="class-title">{c.name}</div>
+              <div className="class-teacher">{c.teacher}</div>
+
+              <div className="class-footer">
+                <span className="class-code">
+                  {c.code}
+                  <Copy
+                    size={12}
+                    onClick={(e) => copyCode(e, c.code)}
+                  />
+                </span>
+
+                <span className="class-students">
+                  <Users size={13} /> {c.students?.length || 0}
+                </span>
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      {/* CREATE MODAL */}
-      {modalOpen && (
-        <Modal
-          title="Create Class"
-          darkMode={darkMode}
-          onClose={() => setModalOpen(false)}
-        >
+      {/* CREATE */}
+      {modal && (
+        <Modal title="Create Class" onClose={() => setModal(false)}>
           <input
-            placeholder="Class Name"
-            className={`w-full p-3 rounded-xl mb-4 border outline-none ${
-              darkMode
-                ? "bg-[#0B1221] border-[#374151] text-white"
-                : "bg-gray-100 border-gray-300"
-            }`}
-            value={newClass.name}
-            onChange={(e) => setNewClass({ ...newClass, name: e.target.value })}
-          />
-
-          <input
-            placeholder="Teacher Name"
-            className={`w-full p-3 rounded-xl border outline-none ${
-              darkMode
-                ? "bg-[#0B1221] border-[#374151] text-white"
-                : "bg-gray-100 border-gray-300"
-            }`}
-            value={newClass.teacher}
+            className="modal-input"
+            placeholder="Class name"
+            value={form.name}
             onChange={(e) =>
-              setNewClass({ ...newClass, teacher: e.target.value })
+              setForm({ ...form, name: e.target.value })
             }
           />
-
-          <ModalActions onSubmit={createClass} onClose={() => setModalOpen(false)} />
+          <input
+            className="modal-input"
+            placeholder="Teacher name"
+            value={form.teacher}
+            onChange={(e) =>
+              setForm({ ...form, teacher: e.target.value })
+            }
+          />
+          <ModalActions
+            onSubmit={createClass}
+            onClose={() => setModal(false)}
+            confirmText="Create"
+          />
         </Modal>
       )}
 
-      {/* EDIT MODAL */}
-      {editData && (
-        <Modal
-          title="Edit Class"
-          darkMode={darkMode}
-          onClose={() => setEditData(null)}
-        >
+      {/* EDIT */}
+      {edit && (
+        <Modal title="Edit Class" onClose={() => setEdit(null)}>
           <input
-            value={editData.name}
-            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-            className={`w-full p-3 rounded-xl mb-4 border outline-none ${
-              darkMode ? "bg-[#0B1221] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-            }`}
-          />
-
-          <input
-            value={editData.teacher}
+            className="modal-input"
+            value={edit.name}
             onChange={(e) =>
-              setEditData({ ...editData, teacher: e.target.value })
+              setEdit({ ...edit, name: e.target.value })
             }
-            className={`w-full p-3 rounded-xl border outline-none ${
-              darkMode ? "bg-[#0B1221] border-[#374151] text-white" : "bg-gray-100 border-gray-300"
-            }`}
           />
-
-          <ModalActions onSubmit={saveEdit} onClose={() => setEditData(null)} />
+          <input
+            className="modal-input"
+            value={edit.teacher}
+            onChange={(e) =>
+              setEdit({ ...edit, teacher: e.target.value })
+            }
+          />
+          <ModalActions
+            onSubmit={saveEdit}
+            onClose={() => setEdit(null)}
+            confirmText="Save"
+          />
         </Modal>
       )}
+
+      {/* DELETE */}
+      {confirmDelete && (
+        <Modal title="Delete Class?" onClose={() => setConfirmDelete(null)}>
+          <p className="modal-warning">
+            This action cannot be undone.
+          </p>
+          <ModalActions
+            onSubmit={deleteClass}
+            onClose={() => setConfirmDelete(null)}
+            confirmText="Delete"
+            danger
+          />
+        </Modal>
+      )}
+
+      {/* TOAST */}
+      {toast && <div className="admin-toast">{toast}</div>}
     </div>
   );
 }
 
-/* MODAL COMPONENT */
-function Modal({ children, title, darkMode, onClose }) {
+/* ================= MODAL ================= */
+
+function Modal({ title, children, onClose }) {
+  useEffect(() => {
+    const esc = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-      <div
-        className={`p-6 w-full max-w-md rounded-2xl border relative shadow-xl ${
-          darkMode ? "bg-[#111827] border-[#374151] text-white" : "bg-white"
-        }`}
-      >
-        <h2 className="text-xl font-semibold mb-4">{title}</h2>
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-title">{title}</div>
         {children}
-        <button className="absolute top-4 right-4 opacity-70 hover:opacity-100" onClick={onClose}>
-          ✖
-        </button>
+        <button onClick={onClose} className="modal-close">✕</button>
       </div>
     </div>
   );
 }
 
-/* FOOTER BUTTONS */
-function ModalActions({ onSubmit, onClose }) {
+function ModalActions({ onSubmit, onClose, confirmText = "Confirm", danger }) {
   return (
-    <div className="flex justify-end gap-3 mt-4">
-      <button onClick={onClose} className="opacity-70 hover:opacity-100">
-        Cancel
-      </button>
+    <div className="modal-actions">
+      <button className="btn-secondary" onClick={onClose}>Cancel</button>
       <button
+        className={`btn-primary ${danger ? "danger" : ""}`}
         onClick={onSubmit}
-        className="bg-[#0A66C2] text-white px-5 py-2 rounded-xl hover:bg-[#0d5ccf] active:scale-[0.98] transition"
       >
-        Save
+        {confirmText}
       </button>
     </div>
   );
 }
+
+export { Modal, ModalActions };

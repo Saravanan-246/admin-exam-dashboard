@@ -1,20 +1,35 @@
-// Global reusable styling presets
+/* ================= GITHUB STYLE UI PRESETS ================= */
 
+/* CARD */
 export const card = `
-  rounded-2xl p-6 shadow-sm border transition-all
-  bg-white dark:bg-[#121B2E]
-  border-[#E2E8F0] dark:border-[#1E293B]
+  rounded-xl p-6 border transition
+  bg-white text-[#24292F]
+  border-[#D0D7DE]
+  dark:bg-[#0D1117] dark:text-[#E6EDF3]
+  dark:border-[#30363D]
 `;
 
+/* PRIMARY BUTTON */
 export const buttonPrimary = `
-  wave-btn bg-[#0A66C2] hover:bg-[#0059A8] text-white 
-  px-6 py-3 rounded-xl text-sm font-medium shadow-md transition-all
+  inline-flex items-center justify-center
+  px-4 py-2 rounded-md text-sm font-medium
+  bg-[#238636] text-white
+  hover:bg-[#2EA043]
+  border border-[#238636]
+  transition
+  disabled:opacity-60 disabled:cursor-not-allowed
 `;
 
+/* PAGE TITLE */
 export const pageTitle = `
-  text-3xl font-semibold text-[#0A66C2] dark:text-[#4DA3FF]
+  text-2xl font-semibold
+  text-[#24292F]
+  dark:text-[#E6EDF3]
 `;
 
+/* SUBTITLE */
 export const subtitle = `
-  text-gray-500 dark:text-gray-400 text-sm
+  text-sm
+  text-[#57606A]
+  dark:text-[#8B949E]
 `;

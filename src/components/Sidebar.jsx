@@ -9,131 +9,89 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
-import { useTheme } from "../context/ThemeContext.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import "../styles/sidebar.css";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-  const { darkMode } = useTheme();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [confirm, setConfirm] = useState(false);
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const menu = [
+    { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Classes", path: "/admin/classes", icon: School },
+    { label: "Create Exam", path: "/admin/create-exam", icon: ClipboardEdit },
+    { label: "Question Bank", path: "/admin/questions", icon: FileText },
+    { label: "Evaluations", path: "/admin/evaluate", icon: CheckCircle },
+    { label: "Students", path: "/admin/students", icon: Users },
+  ];
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-    navigate("/");
+    localStorage.clear();
+    navigate("/admin/login", { replace: true });
   };
 
   return (
     <>
-      {/* Sidebar CSS - unchanged */}
-      <style>{`
-        .sidebar { transition: width .28s ease; }
-        .sidebar-item { position: relative; overflow: hidden; }
-        .sidebar-item:hover { transform: translateX(4px); }
-        .active-menu { background:#0A66C2 !important; color:white !important; font-weight:500; }
-        .indicator {
-          position:absolute;
-          left:0;
-          width:4px;
-          height:100%;
-          background:#0A66C2;
-          border-radius:0 6px 6px 0;
-        }
-      `}</style>
-
-      {/* SIDEBAR */}
       <aside
-        className={`sidebar fixed top-0 left-0 h-full flex flex-col py-6 px-3 shadow-sm border-r z-50
-        ${darkMode ? "bg-[#101827] border-[#1E293B]" : "bg-white border-[#E2E8F0]"}
-        `}
-        style={{ width: collapsed ? "80px" : "256px" }}
+        className={`sidebar ${collapsed ? "collapsed" : ""}`}
       >
-        {/* Toggle */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className={`wave-btn mb-8 p-2 rounded-lg border shadow-sm transition
-            ${darkMode ? "bg-[#1E293B] border-[#334155] text-white" : "bg-white border-gray-300"}
-          `}
-        >
-          <Menu size={19} />
-        </button>
-
-        {/* Logo */}
-        <div className="mb-10 flex justify-center">
-          {!collapsed ? (
-            <h1 className={`text-xl font-bold ${darkMode ? "text-white" : "text-[#0A66C2]"}`}>
-              Exam Admin
-            </h1>
-          ) : <span className="text-xl"></span>}
+        {/* HEADER */}
+        <div className="sidebar-header">
+          {!collapsed && <span className="sidebar-title">Admin</span>}
+          <button
+            className="sidebar-toggle"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Menu size={18} />
+          </button>
         </div>
 
-        {/* Menus (FIXED PATHS) */}
-        <nav className="space-y-2">
-          {[
-            { label: "Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={18} /> },
-            { label: "Classes", path: "/admin/classes", icon: <School size={18} /> },
-            { label: "Create Exam", path: "/admin/create-exam", icon: <ClipboardEdit size={18} /> },
-            { label: "Question Bank", path: "/admin/questions", icon: <FileText size={18} /> },
-            { label: "Evaluations", path: "/admin/evaluate", icon: <CheckCircle size={18} /> },
-            { label: "Students", path: "/admin/students", icon: <Users size={18} /> },
-          ].map((item, idx) => (
-            <NavLink
-              key={idx}
-              to={item.path}
-              className={({ isActive }) =>
-                `sidebar-item flex items-center gap-3 p-3 rounded-xl relative
-                ${darkMode ? "text-gray-300 hover:bg-[#162236]" : "text-gray-600 hover:bg-[#E8F2FF]"}
-                ${isActive ? "active-menu" : ""}`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && <div className="indicator"></div>}
-                  <span className="w-6 flex justify-center">{item.icon}</span>
-                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </>
-              )}
-            </NavLink>
-          ))}
+        {/* MENU */}
+        <nav className="sidebar-nav">
+          {menu.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={i}
+                to={item.path}
+                className="sidebar-link"
+              >
+                <Icon size={18} />
+                {!collapsed && <span>{item.label}</span>}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        {/* Logout */}
-        <button
-          onClick={() => setShowLogoutConfirm(true)}
-          className={`sidebar-item mt-auto flex items-center gap-3 p-3 rounded-xl transition cursor-pointer
-            ${darkMode ? "text-red-400 hover:bg-[#2A3346]" : "text-red-500 hover:bg-red-50"}
-          `}
-        >
-          <LogOut size={18} /> {!collapsed && <span>Logout</span>}
-        </button>
+        {/* LOGOUT */}
+        <div className="sidebar-footer">
+          <button
+            className="sidebar-logout"
+            onClick={() => setConfirm(true)}
+          >
+            <LogOut size={18} />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
       </aside>
 
-      {/* Logout Confirm Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[999]">
-          <div
-            className={`p-6 rounded-xl shadow-xl w-full max-w-sm 
-            ${darkMode ? "bg-[#1E293B] text-white" : "bg-white text-black"}`}
-          >
-            <h2 className="text-lg font-semibold mb-3">Confirm Logout</h2>
-            <p className="text-sm opacity-70 mb-6">Are you sure you want to logout?</p>
+      {/* LOGOUT MODAL */}
+      {confirm && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3 className="modal-title">Confirm logout</h3>
+            <p className="modal-text">
+              Are you sure you want to logout?
+            </p>
 
-            <div className="flex justify-end gap-3">
-              <button
-                className="px-4 py-2 rounded-lg opacity-70 hover:opacity-100"
-                onClick={() => setShowLogoutConfirm(false)}
-              >
+            <div className="modal-actions">
+              <button onClick={() => setConfirm(false)} className="btn-muted">
                 Cancel
               </button>
-
-              <button
-                className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600"
-                onClick={handleLogout}
-              >
+              <button onClick={handleLogout} className="btn-danger">
                 Logout
               </button>
             </div>
