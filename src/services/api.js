@@ -1,42 +1,21 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://classroom-backend-s22x.onrender.com";
 
-if (!API_BASE) {
-  console.error("❌ VITE_API_BASE_URL is missing");
-}
-
-// 🔥 helper to normalize URL
-const buildUrl = (base, path) => {
-  const cleanBase = base.replace(/\/+$/, ""); // remove trailing /
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return `${cleanBase}${cleanPath}`;
-};
-
-export const apiFetch = async (url, options = {}) => {
-  const token =
-    localStorage.getItem("adminToken") ||
-    localStorage.getItem("studentToken");
-
-  const res = await fetch(buildUrl(API_BASE, url), {
-    method: options.method || "GET",
+export async function apiFetch(path, options = {}) {
+  const res = await fetch(BASE_URL + path, {
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...(options.headers || {}),
     },
-    body: options.body,
+    ...options,
   });
 
-  // ✅ SAFE ERROR HANDLING
+  const data = await res.json();
+
   if (!res.ok) {
-    let message = "API error";
-    try {
-      const error = await res.json();
-      message = error.message || message;
-    } catch {
-      // backend may not return JSON
-    }
-    throw new Error(message);
+    throw new Error(data.message || "API error");
   }
 
-  return res.json();
-};
+  return data;
+}
